@@ -143,7 +143,7 @@
     }
 
     Vue.mixin({
-      ready: function () {
+      mounted: function () {
         var self = this
         var head = this.$options.head
         if (!head) return
