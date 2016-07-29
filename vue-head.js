@@ -25,22 +25,22 @@
      * Undo the document title for previous state
      * @param  {Object} state 
      */
-    undoTitle: function (state) {
-      if (!state.before) return
-      document.title = state.before
-    },
+    // undoTitle: function (state) {
+    //   if (!state.before) return
+    //   document.title = state.before
+    // },
 
     /**
      * Undo elements to its previous state
      * @param  {Object} states
      */
-    undo: function (states) {
-      if (!states.length) return
-      var headElement = this.getHead()
-      states.map(function (state) {
-        ;(state.before) ? headElement.replaceChild(state.before, state.after) : headElement.removeChild(state.after)
-      })
-    },
+    // undo: function (states) {
+    //   if (!states.length) return
+    //   var headElement = this.getHead()
+    //   states.map(function (state) {
+    //     ;(state.before) ? headElement.replaceChild(state.before, state.after) : headElement.removeChild(state.after)
+    //   })
+    // },
 
     /**
      * Change document title
@@ -143,26 +143,38 @@
     }
 
     Vue.mixin({
-      mounted: function () {
-        var self = this
-        var head = this.$options.head
-        if (!head) return
-        Object.keys(head).map(function (key) {
-          if (head[key]) {
-            var obj = (typeof head[key] === 'object') ? head[key] : head[key].bind(self)()
-            util[key](obj)
-          }
-        })
+      mounted() {
+        this.updateMeta()
       },
-      destroyed: function () {
-        var head = this.$options.head
-        if (!head) return
-        if (typeof head.undo === 'undefined' || head.undo) {
-          util.undoTitle(diffTitle)
-          util.undo(diff)
+      watch: {
+        '$route'() { this.updateMeta() },
+        'head': {
+          deep: true,
+          handler: function() { this.updateMeta() }
+        },
+      },
+      methods: {
+        updateMeta() {
+          var self = this
+          if (this.$options.type != 'page') return
+          var head = this.head || this.$root.$options.head
+          Object.keys(head).map(function (key) {
+            if (head[key]) {
+              var obj = (typeof head[key] === 'object') ? head[key] : head[key].bind(self)()
+              util[key](obj)
+            }
+          })
         }
-        diff = []
-      }
+      },
+      // destroyed: function () {
+      //   var head = this.$options.head
+      //   if (!head) return
+      //   if (typeof head.undo === 'undefined' || head.undo) {
+      //     util.undoTitle(diffTitle)
+      //     util.undo(diff)
+      //   }
+      //   diff = []
+      // }
     })
   }
 
